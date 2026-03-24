@@ -1,7 +1,8 @@
-const { Client, GatewayIntentBits } = require('discord.js')
+const { Client, GatewayIntentBits, ActivityType } = require('discord.js')
+const eventHandler = require('./handlers/eventHandler')
 require('dotenv/config')
 
-const bot = new Client({
+const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
@@ -9,26 +10,8 @@ const bot = new Client({
     ]
 })
 
-bot.on('clientReady', () => {
-    console.log('The bot is ready')
-})
+eventHandler(client)
 
-bot.on('messageCreate', message => {
 
-    // I'm dad response thing (very funny)
 
-    if (message.author.id == bot.user.id) return
-    imWord = null;
-    if (message.content.toLowerCase().includes('i\'m')) {
-        imWord = 'i\'m'
-    } 
-    if (message.content.toLowerCase().includes('im')) {
-        imWord = 'im'
-    } 
-    if (imWord) {
-        imIndex = message.content.indexOf('i\'m') || message.content.indexOf('im')
-        message.reply('Hey' + message.content.slice(imIndex + imWord.length + 1) + ', I\'m Melopepo!')
-    }
-})
-
-bot.login(process.env.TOKEN)
+client.login(process.env.TOKEN)
