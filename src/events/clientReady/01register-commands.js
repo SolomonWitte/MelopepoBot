@@ -8,6 +8,11 @@ module.exports = async (client) => {
     try {
         const localCommands = getLocalCommands();
         const applicationCommands = await getApplicationCommands(client, testServer);
+        
+        // Clear ALL guild commands
+        // const guild = client.guilds.cache.get(testServer);
+        // await guild.commands.set([]);
+        // console.log("Cleared all guild commands.");
 
         for (const localCommand of localCommands) {
             const { name, description, options } = localCommand;
