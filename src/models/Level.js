@@ -1,22 +1,37 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('./path/to/your/sequelize/instance'); // Export the instance from index.js
+const mysql = require('mysql2/promise');
 
-const Level = sequelize.define('Level', {
-    userId: {
-        type: DataTypes.STRING,
-        primaryKey: true,
-    },
-    messages: {
-        type: DataTypes.INTEGER,
-    },
-    xp: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-    },
-    level: {
-        type: DataTypes.INTEGER,
-        defaultValue: 1,
-    }
+require('dotenv/config')
+
+const pool = mysql.createPool({
+    host: 'melopepo.xyz',
+    user: 'botuser',
+    password: process.env.DB_PASSWORD,
+    database: 's9_discord_bot_db',
 });
 
-module.exports = Level; 
+// Function to initialize the database table
+async function initializeDatabase() {
+  try {
+    const connection = await pool.getConnection();
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS levels (
+        userId VARCHAR(255) NOT NULL,
+        guildId VARCHAR(255) NOT NULL,
+        messages INT DEFAULT 0,
+        xp INT DEFAULT 0,
+        level INT DEFAULT 0,
+        PRIMARY KEY (userId, guildId)
+      );
+    `;
+    await connection.query(createTableQuery);
+    connection.release(); // Release the connection back to the pool
+    console.log('Levels table ensured to exist.');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+}
+
+module.exports = {
+  pool,
+  initializeDatabase
+};

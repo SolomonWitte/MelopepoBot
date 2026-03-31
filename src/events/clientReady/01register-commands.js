@@ -15,42 +15,42 @@ module.exports = async (client) => {
         // console.log("Cleared all guild commands.");
 
         for (const localCommand of localCommands) {
-            const { name, description, options } = localCommand;
+            const commandNames = [localCommand.name, ...(localCommand.aliases || [])];
 
-            const existingCommand = await applicationCommands.cache.find(
-                (cmd) => cmd.name === name
-            );
+            for (const name of commandNames) { // Handle aliases
+                const { description, options, deleted } = localCommand;
 
-            if (existingCommand) {
-                if (localCommand.deleted) {
-                    await applicationCommands.delete(existingCommand.id);
-                    console.log(`Deleted command "${name}".`);
-                    continue;
-                }
+                const existingCommand = await applicationCommands.cache.find(
+                    (cmd) => cmd.name === name
+                );
 
-                if (areCommandsDifferent(existingCommand, localCommand)) {
-                    await applicationCommands.edit(existingCommand.id, {
-                        description, 
+                if (existingCommand) {
+                    if (deleted) {
+                        await applicationCommands.delete(existingCommand.id);
+                        console.log(`Deleted command "${name}".`);
+                        continue;
+                    }
+
+                    if (areCommandsDifferent(existingCommand, { ...localCommand, name })) {
+                        await applicationCommands.edit(existingCommand.id, {
+                            description,
+                            options,
+                        });
+                        console.log(`Edited command "${name}".`);
+                    }
+                } else {
+                    if (deleted) continue;
+
+                    await applicationCommands.create({
+                        name,
+                        description,
                         options,
                     });
-
-                    console.log(`Edited command "${name}".`)
+                    console.log(`Registered command: "${name}".`);
                 }
-            } else {
-                if (localCommand.deleted) {
-                    console.log(`Skipping registering command "${name}" as it's set to delete.`)
-                    continue;
-                }
-
-                await applicationCommands.create({
-                    name, 
-                    description,
-                    options,
-                })
-
-                console.log(`Registered command: "${name}".`);
             }
         }
+
     } catch (error) {
         console.log(`There was an error: ${error}`)
     }

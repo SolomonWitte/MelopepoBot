@@ -1,0 +1,43 @@
+const {Client, Message} = require('discord.js');
+const { pool: Level } = require('../../models/Level');
+
+// Get user's info
+async function getInfo(userId, guildId) {
+    const [rows] = await Level.execute(
+        'SELECT * FROM levels WHERE userId = ? AND guildId = ?',
+        [userId, guildId]
+    );
+    return rows[0] || null;
+}
+
+/**
+ * @param {Client} client
+ * @param {Message} message
+ */
+module.exports = async (client, message) => {
+    if (!message.inGuild() || message.author.bot) return;
+
+    const query = {
+        userId: message.author.id,
+        guildId: message.guild.id,
+    };
+
+    try {
+        // Wait for the row to exist and get the current message count
+        const userInfo = await getInfo(query.userId, query.guildId);
+
+        if (!userInfo) return; // row doesn’t exist yet, XP handler will create it
+
+        let messages = userInfo.messages || 0;
+
+        messages += 1;
+
+        await Level.execute(
+            'UPDATE levels SET messages = ? WHERE userId = ? AND guildId = ?',
+            [messages, query.userId, query.guildId]
+        );
+
+    } catch (error) {
+        console.log(`Error counting message: ${error}`);
+    }
+}
