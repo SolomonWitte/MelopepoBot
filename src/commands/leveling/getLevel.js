@@ -1,6 +1,6 @@
 const { Client, Interaction, ApplicationCommandOptionType, AttachmentBuilder } = require('discord.js');
 const { Font, RankCardBuilder } = require('canvacord');
-const calculateLevelXp = require('../../utils/calculateLevelXp')
+const calculateLevelXp = require('../../utils/calculateLevelXP')
 const { pool: Level} = require('../../models/Level');
 
 async function getUserLevel(userId, guildId) {
@@ -19,7 +19,7 @@ module.exports = {
      */
     callback: async (client, interaction) => {
         if (!interaction.inGuild()) {
-            interaction.reply("You can only run this command inside a server, ya goof.");
+            interaction.reply("You can only run this command inside the server, ya goof.");
             return;
         }
 
@@ -56,11 +56,14 @@ module.exports = {
             .setRank(currentRank)
             .setLevel(fetchedLevel.level)
             .setCurrentXP(fetchedLevel.xp)
-            .setRequiredXP(calculateLevelXp(fetchedLevel.level))
-            .setStatus(targetUserObj.presence.status)
+            .setProgressCalculator((currentXP, requiredXP) => {
+                return Math.floor(((currentXP - calculateLevelXp(fetchedLevel.level)) / (requiredXP - calculateLevelXp(fetchedLevel.level)) ) * 100);
+            })
+            .setRequiredXP(calculateLevelXp(fetchedLevel.level + 1))
+            // .setStatus(targetUserObj.presence.status)
             .setUsername(targetUserObj.user.username)
             .setDisplayName(targetUserObj.user.displayName)
-            .setBackground("https://cdn.discordapp.com/attachments/1045121978731872266/1488627631036301382/rankCardBG.png?ex=69cd7804&is=69cc2684&hm=31b8a212360d38b411c88f8483ae79e480b9e148abdf72463187a347c9c4debc&")
+            .setBackground("https://media.discordapp.net/attachments/1045121978731872266/1488627631036301382/rankCardBG.png?ex=69cec984&is=69cd7804&hm=9020515f268aa057aac92186ad3db2a58f151d0c6e16058bab23c256d5476774&=&format=webp&quality=lossless&width=837&height=252")
             .setStyles({
                 progressbar: {
                     thumb: {
@@ -117,9 +120,6 @@ module.exports = {
                 },
             })
 
-        // card.width = 1024;
-        // card.height = 200;
-        console.log(card.style);
         const image = await card.build({ format: 'png',});
         const attachment = new AttachmentBuilder(image);
         interaction.editReply({ files: [attachment] });

@@ -18,6 +18,7 @@ async function initializeDatabase() {
         userId VARCHAR(255) NOT NULL,
         guildId VARCHAR(255) NOT NULL,
         messages INT DEFAULT 0,
+        voiceTime INT DEFAULT 0,
         xp INT DEFAULT 0,
         level INT DEFAULT 0,
         PRIMARY KEY (userId, guildId)

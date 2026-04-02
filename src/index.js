@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, ActivityType } = require('discord.js')
+const { Client, GatewayIntentBits } = require('discord.js')
 const { initializeDatabase } = require('./models/Level');
 const eventHandler = require('./handlers/eventHandler')
 

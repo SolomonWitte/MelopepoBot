@@ -1,21 +1,11 @@
 const {Client, Message} = require('discord.js');
 const { pool: Level} = require('../../models/Level');
-const calculateLevelXp = require('../../utils/calculateLevelXp')
+const { levelRoles, updateLevelRoles } = require('../../utils/xpUtils')
+const calculateLevelXp = require('../../utils/calculateLevelXP')
 const mysql = require('mysql2/promise');
 const cooldowns = new Set();
 
-const levelRoles = {
-    1: "1030698176233099326",
-    2: "1030698775385219152",
-    3: "1030699493571698771",
-    4: "1030699866592129085",
-    5: "1190513921556234330",
-    6: "1190514697821229158",
-    7: "1190515097118974062",
-    8: "1190515207169118260",
-    9: "1190515289973072054",
-    10: "1190520488624148530",
-};
+const cooldownLength = 60000; // Cooldown between messages that give xp
 
 function getRandomXp(min, max) {
     min = Math.ceil(min);
@@ -38,9 +28,6 @@ async function getUserLevel(userId, guildId) {
  * @param {Message} message 
  */
 module.exports = async (client, message) => {
-    
-    //  vvv WHERE LEVEL UP MESSAGES ARE SENT! vvv //
-    const levelsChannel = client.channels.cache.get("1043046038233153566");
 
     if (!message.inGuild() || message.author.bot || cooldowns.has(message.author.id)) return;
 
@@ -49,6 +36,7 @@ module.exports = async (client, message) => {
     const query = {
         userId: message.author.id,
         guildId: message.guild.id,
+        member: message.member
     };
 
     try {
@@ -59,33 +47,13 @@ module.exports = async (client, message) => {
 
             let currentXp = level.xp += xpToGive;
             let currentLevel = level.level;
-            let currentLevelXp = calculateLevelXp(level.level); // The level the user now has after xp addition
+            let requiredXPForNextLevel = calculateLevelXp(level.level + 1);
 
             // -- LEVELING UP!! -- //
-            if (currentXp > currentLevelXp) { 
+            if (currentXp > requiredXPForNextLevel) { 
                 currentLevel += 1;
 
-                const roleId = levelRoles[currentLevel];
-                if (roleId) {
-                    try {
-                        const role = message.guild.roles.cache.get(roleId);
-                        if (!role) return;
-
-                        // Remove old LVL roles
-                        const oldRoles = Object.values(levelRoles)
-                            .filter(id => message.member.roles.cache.has(id));
-                        await message.member.roles.remove(oldRoles);
-
-                        // Add new level role
-                        await message.member.roles.add(role);
-
-                        levelsChannel.send(
-                            `Hey ${message.member}, you leveled up to level ${role}!`
-                        );
-                    } catch (err) {
-                        console.error(`Error assigning level role to ${message.member.user.tag}:`, err);
-                    }
-                }
+                updateLevelRoles(query.member, currentLevel);
             }
             
             await Level.execute(
@@ -96,7 +64,7 @@ module.exports = async (client, message) => {
             cooldowns.add(message.author.id);
             setTimeout(() => {
                 cooldowns.delete(message.author.id)
-            }, 1)
+            }, cooldownLength)
         } else {
             // IF THE PLAYER DOES NOT HAVE ANY DATA STORED YET
             // (!level)
@@ -111,7 +79,7 @@ module.exports = async (client, message) => {
             cooldowns.add(message.author.id);
             setTimeout(() => {
                 cooldowns.delete(message.author.id)
-            }, 60000)
+            }, cooldownLength)
         }
 
         console.log(await getUserLevel(query.userId, query.guildId));
