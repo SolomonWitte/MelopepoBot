@@ -4,7 +4,7 @@ require('dotenv/config')
 
 const pool = mysql.createPool({
     host: 'melopepo.xyz',
-    user: 'botuser',
+    user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: 's9_discord_bot_db',
 });
