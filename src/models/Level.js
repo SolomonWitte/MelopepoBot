@@ -7,7 +7,6 @@ const pool = mysql.createPool({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: 's9_discord_bot_db',
-    socketPath: '/var/run/mysqld/mysqld.sock',
 });
 
 // Function to initialize the database table
