@@ -1,8 +1,7 @@
 const { Client, Interaction, ApplicationCommandOptionType, PermissionFlagsBits } = require('discord.js');
 const { pool: Level} = require('../../models/Level');
 const { permissionsRequired } = require('../moderation/timeout');
-const { updateLevelRoles } = require('../../utils/xpUtils');
-const calculateLevelXp = require('../../utils/calculateLevelXP');
+const { updateLevelRoles, calculateLevelXP } = require('../../utils/xpUtils');
 
 module.exports = {
     /**
@@ -22,7 +21,7 @@ module.exports = {
         const targetUserId = interaction.options.get('target-user').value;
         const targetUserObj = await interaction.guild.members.fetch(targetUserId);
         const targetLevel = interaction.options.get('target-level').value;
-        let targetXp = calculateLevelXp(targetLevel);
+        let targetXp = calculateLevelXP(targetLevel);
 
         await Level.execute(
                 'UPDATE levels SET xp = ?, level = ? WHERE userId = ? AND guildId = ?',

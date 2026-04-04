@@ -1,7 +1,8 @@
 const { Client, Interaction, ApplicationCommandOptionType, AttachmentBuilder } = require('discord.js');
 const { Font, RankCardBuilder } = require('canvacord');
-const calculateLevelXp = require('../../utils/calculateLevelXP')
+const { calculateLevelXP } = require('../../utils/xpUtils')
 const { pool: Level} = require('../../models/Level');
+const path = require('path')
 
 async function getUserLevel(userId, guildId) {
     const [rows] = await Level.execute(
@@ -57,13 +58,13 @@ module.exports = {
             .setLevel(fetchedLevel.level)
             .setCurrentXP(fetchedLevel.xp)
             .setProgressCalculator((currentXP, requiredXP) => {
-                return Math.floor(((currentXP - calculateLevelXp(fetchedLevel.level)) / (requiredXP - calculateLevelXp(fetchedLevel.level)) ) * 100);
+                return Math.floor(((currentXP - calculateLevelXP(fetchedLevel.level)) / (requiredXP - calculateLevelXP(fetchedLevel.level)) ) * 100);
             })
-            .setRequiredXP(calculateLevelXp(fetchedLevel.level + 1))
+            .setRequiredXP(calculateLevelXP(fetchedLevel.level + 1))
             // .setStatus(targetUserObj.presence.status)
             .setUsername(targetUserObj.user.username)
             .setDisplayName(targetUserObj.user.displayName)
-            .setBackground("https://media.discordapp.net/attachments/1045121978731872266/1488627631036301382/rankCardBG.png?ex=69cec984&is=69cd7804&hm=9020515f268aa057aac92186ad3db2a58f151d0c6e16058bab23c256d5476774&=&format=webp&quality=lossless&width=837&height=252")
+            .setBackground(path.join(__dirname, '../../assets/rankCardBG.png'))
             .setStyles({
                 progressbar: {
                     thumb: {

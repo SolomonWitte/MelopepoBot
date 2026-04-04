@@ -16,6 +16,64 @@ const levelRoles = {
 
 const maxLevel = 10; // Remember to update this if any more level roles are added.
 
+// Get user's level data
+async function getUserLevel(userId, guildId) {
+    const [rows] = await Level.execute(
+        'SELECT * FROM levels WHERE userId = ? AND guildId = ?',
+        [userId, guildId]
+    );
+    return rows[0] || null;
+}
+
+function calculateLevelXP(level) {
+    return Math.floor(500 * Math.pow(level, 2));
+};
+
+// Give user xp and update level accordingly
+async function giveUserXP(member, guildId, xpToGive) {
+    try {
+        const level = await getUserLevel(member.id, guildId);
+
+        // -- UPDATING DATABASE -- //
+        if (level) { 
+
+            let currentXp = level.xp += xpToGive;
+            let currentLevel = level.level;
+            let requiredXPForNextLevel = calculateLevelXP(level.level + 1);
+
+            // -- LEVELING UP!! -- //
+            if (currentXp > requiredXPForNextLevel) { 
+                currentLevel += 1;
+
+                updateLevelRoles(member, currentLevel);
+            }
+            
+            await Level.execute(
+                'UPDATE levels SET xp = ?, level = ? WHERE userId = ? AND guildId = ?',
+                [currentXp, currentLevel, member.id, guildId]
+            );
+            
+        } else {
+            // IF THE PLAYER DOES NOT HAVE ANY DATA STORED YET
+            // (!level)
+            // It kind of seems like the first message xp isn't being stored... 
+            // but idk what's happening and it's not that big of a deal so idc atm
+            await Level.execute(
+                'INSERT INTO levels (userId, guildId, messages, xp, level) VALUES (?, ?, ?, ?, ?)',
+                [member.id, guildId, 1, xpToGive, 0]
+            );
+            console.log(`Inserted new level data for user ${member.id} in guild ${guildId}`);
+            
+        }
+
+        console.log(await getUserLevel(member.id, guildId)); // DELETE THIS
+
+    } catch (error) {
+        console.log(`Error giving xp: ${error}`)
+    }
+}
+
+// Update the roles to be consistent with the member's current level
 async function updateLevelRoles(member, levelToUpdateTo) {
 
     // Where level up messages are sent
@@ -51,4 +109,4 @@ async function updateLevelRoles(member, levelToUpdateTo) {
 }
 
 
-module.exports = {levelRoles, updateLevelRoles}
+module.exports = {levelRoles, calculateLevelXP, updateLevelRoles, getUserLevel, giveUserXP}
