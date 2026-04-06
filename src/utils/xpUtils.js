@@ -16,9 +16,10 @@ const levelRoles = {
 
 // Roles which do not earn XP - Mods, Admins
 const xpStunted =  [
-    "1231089601070764093",
-    "1020879775738384455",
-    "1192996283665895535"
+    "942640564384456765", // Admin
+    "1231089601070764093", // Elder Mod
+    "1020879775738384455", // Mod
+    "1192996283665895535" // Melon^3
 ]
 
 const maxLevel = 10; // Remember to update this if any more level roles are added.
