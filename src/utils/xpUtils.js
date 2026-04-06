@@ -14,6 +14,13 @@ const levelRoles = {
     10: "1190520488624148530",
 };
 
+// Roles which do not earn XP - Mods, Admins
+const xpStunted =  [
+    "1231089601070764093",
+    "1020879775738384455",
+    "1192996283665895535"
+]
+
 const maxLevel = 10; // Remember to update this if any more level roles are added.
 
 // Get user's level data
@@ -32,6 +39,10 @@ function calculateLevelXP(level) {
 // Give user xp and update level accordingly
 async function giveUserXP(member, guildId, xpToGive) {
     try {
+        if (member.roles.cache.some(role => xpStunted.includes(role.id))) {
+            return; // Does not award XP to roles in xpStunted
+        }
+
         const level = await getUserLevel(member.id, guildId);
 
         // -- UPDATING DATABASE -- //
