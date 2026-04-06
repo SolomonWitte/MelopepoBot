@@ -97,10 +97,8 @@ async function updateLevelRoles(member, levelToUpdateTo) {
             levelsChannel.send({
                 content: `Hey ${member}, you are now level ${role}!`,
                 allowedMentions: { 
-                    members: [member.id],
-                    roles: [],
-                    parse: []
-                 }
+                    parse: ['users']
+                }
             });
         } catch (err) {
             console.error(`Error assigning level role to ${member.user.tag}:`, err);
