@@ -10,9 +10,12 @@ module.exports = async (client, interaction) => {
     const localCommands = getLocalCommands();
 
     try {
-        const commandObject = localCommands.find(
-            (cmd) => cmd.name === interaction.commandName
-        );
+        const commandObject = localCommands.find((cmd) => {
+            if (cmd.name === interaction.commandName) return true;
+
+            return cmd.aliases?.includes(interaction.commandName); // For aliases
+            
+        });
 
         if (!commandObject) return;
 
