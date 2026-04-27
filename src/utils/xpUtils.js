@@ -107,7 +107,7 @@ async function updateLevelRoles(member, levelToUpdateTo) {
             await member.roles.add(role);
 
             levelsChannel.send({
-                content: `Hey ${member}, you are now level ${role}!`,
+                content: `Hey ${member}, you are now ${role}!`,
                 allowedMentions: { 
                     parse: ['users']
                 }
